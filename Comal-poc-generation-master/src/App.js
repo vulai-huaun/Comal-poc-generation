@@ -15,11 +15,20 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      id: "VUL-xxxx-xxxx",
       name: "poc-yaml-sql",
+      tags: "",
       transport : "http",
       rules: [new Rule()],
       detail: {},
       poc: "",
+      detail:{
+        vulnerability: {
+          proof: {
+            info: "存在xxxxxxx漏洞。"
+          }
+        }
+      },
     };
 
     this.updateRule = this.updateRule.bind(this);
@@ -63,9 +72,12 @@ export default class App extends React.Component {
 
   generatePOC() {
     let data = {
+      id: this.state.id,
       name: this.state.name,
+      tags: this.state.tags,
       transport: this.state.transport,
       rules: clone(this.state.rules),
+      detail: this.state.detail,
     };
 
     for (let rule of data.rules) {
@@ -83,10 +95,13 @@ export default class App extends React.Component {
       } else {
         delete rule.headers;
       }
-
-      if (!rule.body.length) {
-        delete rule.body;
+      if (!rule.body || !rule.body.length) {
+        rule.body = ""; // 设置为空字符串或其他默认值
       }
+
+      // if (!rule.body.length) {
+      //   delete rule.body;
+      // }
 
       if (!rule.path.length) {
         delete rule.path;
@@ -136,10 +151,13 @@ export default class App extends React.Component {
     }
 
     const poc = yaml.safeDump({
+      id: this.state.id,
       name: this.state.name,
+      tags: ["xxxx"],
       transport: this.state.transport,
       rules: rulesObj,
       expression: buildExpression(ruleCount),
+      detail: this.state.detail,
     });
 
     this.setState({ poc, isEditable: true });
